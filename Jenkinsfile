@@ -6,7 +6,7 @@
 //final HOST_PROVISION = params.HOST_PROVISION
 
 final GIT_URL = 'https://github.com/gaganmathur152/soccer-stats.git'
-final NEXUS_URL = 'nexus.local:8081'
+final NEXUS_URL = '13.127.120.96:8081'
 
 stage('Build') {
     node {
@@ -28,7 +28,7 @@ stage('Build') {
             }
         }
     }
-
+/*
     stage('Integration Tests') {
         node {
             withEnv(["PATH+MAVEN=${tool 'Maven'}/bin"]) {
@@ -60,8 +60,7 @@ if(FULL_BUILD) {
         }
     }
 }
-/*
-if(FULL_BUILD) {
+*/
     stage('Artifact Upload') {
         node {
             unstash 'artifact'
@@ -79,14 +78,12 @@ if(FULL_BUILD) {
                 credentialsId: 'nexus', 
                 groupId: "${pom.groupId}", 
                 nexusUrl: NEXUS_URL, 
-                nexusVersion: 'nexus3', 
+                nexusVersion: 'nexus2', 
                 protocol: 'http', 
                 repository: 'ansible-meetup', 
                 version: "${pom.version}"        
         }
     }
-}
-
 
 stage('Deploy') {
     node {
@@ -96,16 +93,16 @@ stage('Deploy') {
 
         def version = pom.version
 
-        if(!FULL_BUILD) { //takes the last version from repo
+//        if(!FULL_BUILD) { //takes the last version from repo
             sh "curl -o metadata.xml -s http://${NEXUS_URL}/repository/ansible-meetup/${repoPath}/maven-metadata.xml"
             version = sh script: 'xmllint metadata.xml --xpath "string(//latest)"',
                          returnStdout: true
-        }
+//        }
         def artifactUrl = "http://${NEXUS_URL}/repository/ansible-meetup/${repoPath}/${version}/${pom.artifactId}-${version}.war"
 
         withEnv(["ARTIFACT_URL=${artifactUrl}", "APP_NAME=${pom.artifactId}"]) {
             echo "The URL is ${env.ARTIFACT_URL} and the app name is ${env.APP_NAME}"
-
+/*
             // install galaxy roles
             sh "ansible-galaxy install -vvv -r provision/requirements.yml -p provision/roles/"        
 
